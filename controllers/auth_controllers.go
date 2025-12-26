@@ -14,21 +14,31 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-
 type AuthController struct {
 	DB *sql.DB
 }
 
+// Struct ini harus Exported (Huruf besar) biar terbaca Swagger
 type LoginRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
-type LoginReponse struct {
+type LoginResponse struct {
 	Token string `json:"token"`
 }
 
-
+// Register godoc
+// @Summary      Daftar User Baru
+// @Description  Mendaftarkan user baru dengan username dan password
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body models.RegisterRequest true "Payload Register"
+// @Success      201      {object}  map[string]string
+// @Failure      400      {object}  utils.ErrorMsg
+// @Failure      500      {object}  map[string]string
+// @Router       /register [post]
 func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -38,16 +48,17 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validasi Input
+	if errors := utils.ValidateStruct(input); len(errors) > 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(errors)
+		return
+	}
+
 	hashedPassword, err := helpers.HashPassword(input.Password)
 	if err != nil {
 		http.Error(w, "Error hashing password", http.StatusInternalServerError)
 		return
-	}
-
-	if errors := utils.ValidateStruct(input); len(errors) > 0 {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(errors)
-				return
 	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
@@ -57,7 +68,8 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 	_, err = c.DB.ExecContext(ctx, query, input.Username, hashedPassword)
 
 	if err != nil {
-		http.Error(w, "Error creating user", http.StatusInternalServerError)
+		// Cek duplicate entry (kalau username sudah ada)
+		http.Error(w, "Gagal membuat user (Mungkin username sudah dipakai)", http.StatusInternalServerError)
 		return
 	}
 
@@ -65,6 +77,17 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "User registered successfully"})
 }
 
+// Login godoc
+// @Summary      Login User
+// @Description  Masuk ke sistem untuk mendapatkan JWT Token
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body LoginRequest true "Payload Login"
+// @Success      200      {object}  LoginResponse
+// @Failure      400      {object}  utils.ErrorMsg
+// @Failure      401      {object}  map[string]string
+// @Router       /login [post]
 func (c *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -74,14 +97,14 @@ func (c *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user models.User
-
+	// Validasi Input
 	if errors := utils.ValidateStruct(input); len(errors) > 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(errors)
 		return
 	}
 
+	var user models.User
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 	defer cancel()
 
@@ -112,5 +135,7 @@ func (c *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error generating token", http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(LoginReponse{Token: tokenString})
+	
+	// Return struct LoginResponse biar rapi di swagger
+	json.NewEncoder(w).Encode(LoginResponse{Token: tokenString})
 }

@@ -1,5 +1,19 @@
-basePath: /api
 definitions:
+  controllers.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  controllers.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
   models.Product:
     properties:
       harga:
@@ -9,7 +23,33 @@ definitions:
       nama:
         type: string
       stok:
+        minimum: 0
         type: integer
+    required:
+    - harga
+    - nama
+    - stok
+    type: object
+  models.RegisterRequest:
+    properties:
+      password:
+        maxLength: 20
+        minLength: 3
+        type: string
+      username:
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  utils.ErrorMsg:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -17,13 +57,42 @@ info:
     email: support@tokogolang.com
     name: Support API
   description: Ini adalah server API Toko Online belajar Golang.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
   title: Toko Golang API
   version: "1.0"
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Masuk ke sistem untuk mendapatkan JWT Token
+      parameters:
+      - description: Payload Login
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorMsg'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login User
+      tags:
+      - auth
   /products:
     get:
       consumes:
@@ -123,4 +192,43 @@ paths:
       summary: Edit produk baru
       tags:
       - products
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Mendaftarkan user baru dengan username dan password
+      parameters:
+      - description: Payload Register
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorMsg'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Daftar User Baru
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

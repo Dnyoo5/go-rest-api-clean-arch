@@ -23,12 +23,14 @@ import (
 
 // @contact.name    Support API
 // @contact.email   support@tokogolang.com
-
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+//@BasePath /api
 // @license.name    Apache 2.0
 // @license.url     http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host      localhost:8080
-// @BasePath  /api
 func main() {
 	
 	db := config.ConnectDB()
@@ -57,8 +59,8 @@ func main() {
 		})
         
     })
-	fmt.Println("Server berjalan di http://localhost:8080")
-	http.ListenAndServe(":8080", r)
+	fmt.Println("Server berjalan di http://localhost:8081")
+	http.ListenAndServe(":8081", r)
 
 
 }
