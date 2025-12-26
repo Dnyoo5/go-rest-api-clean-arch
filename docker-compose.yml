@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  # 1. Kontener Database (Kita bikin MySQL sendiri di dalam Docker!)
+  db_mysql:
+    image: mysql:8.0
+    container_name: mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: root # Password database
+      MYSQL_DATABASE: toko_golang # Nama database otomatis dibuat
+    ports:
+      - "3307:3306" # Kita pakai port 3307 di laptop biar gak bentrok sama MySQL aslimu
+    volumes:
+      - mysql_data:/var/lib/mysql # Biar datanya awet kalau kontener dimatikan
+
+  # 2. Kontener Aplikasi Go Kita
+  app_backend:
+    build: .
+    container_name: toko_go_container
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db_mysql # Tunggu MySQL nyala dulu baru App nyala
+    environment:
+      # PENTING: Hostnya bukan 'localhost', tapi nama service di atas ('db_mysql')
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_HOST: db_mysql
+      DB_PORT: 3306
+      DB_NAME: toko_golang
+      JWT_SECRET: rahasia-super-aman
+
+volumes:
+  mysql_data:

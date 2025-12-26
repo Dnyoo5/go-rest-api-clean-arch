@@ -1,0 +1,126 @@
+basePath: /api
+definitions:
+  models.Product:
+    properties:
+      harga:
+        type: integer
+      id:
+        type: integer
+      nama:
+        type: string
+      stok:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@tokogolang.com
+    name: Support API
+  description: Ini adalah server API Toko Online belajar Golang.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Toko Golang API
+  version: "1.0"
+paths:
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil daftar lengkap produk dari database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Product'
+            type: array
+      summary: Menampilkan semua produk
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Menambahkan data produk ke database dengan input JSON
+      parameters:
+      - description: Data Produk
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/models.Product'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Tambah produk baru
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Menghapus data produk dari database berdasarkan ID
+      parameters:
+      - description: Data Produk
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/models.Product'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Delete produk baru
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Memperbarui data produk ke database dengan input JSON
+      parameters:
+      - description: Data Produk
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/models.Product'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Edit produk baru
+      tags:
+      - products
+swagger: "2.0"

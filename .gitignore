@@ -1,0 +1,13 @@
+# Rahasia (JANGAN DIHAPUS)
+.env
+
+# Binary hasil build (Gak perlu diupload)
+main
+main.exe
+*.exe
+
+# Folder IDE (VSCode)
+.vscode/
+
+# Folder database docker (biar gak berat)
+mysql_data/
